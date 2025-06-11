@@ -1,13 +1,14 @@
 ﻿@page "/ai-predictions"
 @using Blazor.Interfaces;
 @inject IBackendService _backendService;
+@inject IJSRuntime JS
 
 <div class="page-container">
 
     <!-- Top Large section -->
     <div class="top-section">
         <h3>Heatmap</h3>
-        <div class="placeholder">[Heatmap]</div>
+        <div id="heatmap"></div>
     </div>
 
     <!-- Middle: Left/Right split -->
@@ -112,9 +113,36 @@
         color: #888888;
     }
 
+    #heatmap {
+        height: 100%;
+        width: 100%;
+        border-radius: 8px;
+    }
+
     @@media (max-width: 768px) {
         .middle-section {
             flex-direction: column;
         }
     }
 </style>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Console.WriteLine("Initializing heatmap...");
+            await JS.InvokeVoidAsync("heatmapInterop.initMap", "heatmap", 51.505, -0.09, 13); // Centered on London
+
+            var heatPoints = new[]
+            {
+new[] {51.505, -0.09, 0.5},
+new[] {51.515, -0.1, 0.7},
+new[] {51.525, -0.08, 0.9}
+};
+
+            // Add heatmap points to the map
+            await JS.InvokeVoidAsync("heatmapInterop.addHeatmap", heatPoints);
+        }
+    }
+}
