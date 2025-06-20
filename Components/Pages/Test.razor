@@ -1,0 +1,65 @@
+@page "/test"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+
+@code{
+private List<Litter> litterItems = new();
+
+private async Task GetDataFromBackend()
+{
+    try
+    {
+        var filter = new LitterFilterDto
+        {
+            // Voeg hier eventueel filters toe, zoals datum of locatie
+        };
+
+        var tempLitterItems = await _backendService.GetLittersAsync(filter);
+        
+        if (tempLitterItems is null || !tempLitterItems.Any())
+        {
+            Console.WriteLine("Geen data ontvangen van de backend.");
+            return;
+        }
+
+        litterItems = tempLitterItems;
+
+        Console.WriteLine($"Ontvangen: {litterItems.Count} items.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Fout bij ophalen van backenddata: {ex.Message}");
+    }
+}
+}
+
+@if (litterItems is null || !litterItems.Any())
+{
+    <p>Geen data beschikbaar.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Datum</th>
+                <th>Temperatuur</th>
+                <th>Locatie</th>
+                <th>Weer</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in litterItems)
+            {
+                <tr>
+                    <td>@item.Type</td>
+                    <td>@item.TimeStamp.ToString("g")</td>
+                    <td>@item.Temperature °C</td>
+                    <td>@item.Location</td>
+                    <td>@item.Weather</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
